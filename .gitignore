@@ -1,0 +1,5 @@
+*.wav
+*.aif
+*.aiff
+.DS_Store
+.DS_Store?
