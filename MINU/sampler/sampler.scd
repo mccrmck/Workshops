@@ -1,6 +1,5 @@
 /* === MINU 2023: sampler === */
 (
-/* === data === */
 
 var server = Server.default;
 var guiNetAddr = NetAddr("127.0.0.1",8080);
@@ -17,12 +16,13 @@ server.waitForBoot({
 	/* === resources === */
 
 	// busses
-	var bufnumBus   = Bus.control(server,1);
-	var startEndBus = Bus.control(server,2).setn([0,1]);
-	var atkBus = Bus.control(server,1).set(0.01);
-	var rlsBus = Bus.control(server,1).set(0.01);
-	var rateBus = Bus.control(server,1).set(1);
-	var ampBus = Bus.control(server,1).set(0);
+	var bufnumBus    = Bus.control(server,1);
+	var startEndBus  = Bus.control(server,2).setn([0,1]);
+	var atkBus       = Bus.control(server,1).set(0.01);
+	var rlsBus       = Bus.control(server,1).set(0.01);
+	var rateBus      = Bus.control(server,1).set(1);
+	var directionBus = Bus.control(server,1).set(1);
+	var ampBus       = Bus.control(server,1).set(0);
 
 	// load samples into buffers
 	PathName("audio/".resolveRelative).entries.do({ |sample|
@@ -58,7 +58,7 @@ server.waitForBoot({
 
 	server.sync;
 
-	/* === OSC defs === */
+	/* === OSCdefs === */
 
 	OSCdef(\startEnd,{ |msg|
 		var start = msg[1];
@@ -106,7 +106,7 @@ server.waitForBoot({
 		var val = msg[1].asInteger;
 		var direction = if(val == 1,{ -1 },{ 1 });
 
-		pbSynth.set(\direction,direction);
+		directionBus.set( direction )
 
 	},'/forwardsBackwards');
 
@@ -117,7 +117,7 @@ server.waitForBoot({
 
 		if( val == 1,{
 			pbSynth = Synth(synthKey,[\atk,atkBus.getSynchronous])
-			.map(\bufnum,bufnumBus,\rate,rateBus,\start,startEndBus.subBus(0),\end,startEndBus.subBus(1),\amp,ampBus)
+			.map(\bufnum,bufnumBus,\rate,rateBus,\direction,directionBus,\start,startEndBus.subBus(0),\end,startEndBus.subBus(1),\amp,ampBus)
 		},{
 			pbSynth.set(\gate,0,\rls,rlsBus.getSynchronous)
 		})
@@ -139,7 +139,7 @@ server.waitForBoot({
 
 	unixString.unixCmd;
 
-	"\nsampler ready to go!".postln;
-	// "ipconfig getifaddr en0".unixCmd
+	"\nsampler ready to go at:".postln;
+	"ipconfig getifaddr en0".unixCmd
 })
 )

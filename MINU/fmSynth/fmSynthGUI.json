@@ -380,7 +380,7 @@
             "traversing": true,
             "on": 1,
             "off": 0,
-            "velocity": false,
+            "velocity": true,
             "mode": "push",
             "value": "",
             "default": "",

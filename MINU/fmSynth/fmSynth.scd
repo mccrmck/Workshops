@@ -1,8 +1,6 @@
 /* === MINU 2023: fmSynth === */
 (
 
-/* === data === */
-
 var server = Server.default;
 var guiNetAddr = NetAddr("127.0.0.1",8080);
 var filter = 0;
@@ -15,10 +13,10 @@ server.waitForBoot({
 
 	/* === resources === */
 
-	var indexBus = Bus.control(server,1).set(1);
-	var modMultBus = Bus.control(server,1).set(1);
-	var lagBus = Bus.control(server,1).set(1);
-	var rqBus = Bus.control(server,1).set(1);
+	var indexBus = Bus.control(server,1).set(0);
+	var modMultBus = Bus.control(server,1).set(0);
+	var lagBus = Bus.control(server,1).set(0.5);
+	var rqBus = Bus.control(server,1).set(0.5);
 
 	var atkBus    = Bus.control(server,1).set(0);
 	var rlsBus    = Bus.control(server,1).set(1);
@@ -26,10 +24,9 @@ server.waitForBoot({
 	var rlsCrvBus = Bus.control(server,1).set(0.5);
 	var ampBus    = Bus.control(server,1).set(0);
 
-
 	/* === synthDefs === */
 
-	SynthDef(\fmPluckSynth,{
+	SynthDef(\fmSynth,{
 		var carFreq = \carFreq.kr(440);
 		var modFreq = carFreq * \modMult.kr(1);
 		var dev = modFreq * \index.kr(1);
@@ -44,14 +41,14 @@ server.waitForBoot({
 				\rlsCrv.kr(0.3).linlin(0,1,-10,10)
 			]
 		).ar(2,\gate.kr(1));
-		sig = Select.ar(\filter.kr(0),[sig,RLPF.ar(sig,sig.abs.linexp(0,1,20,20000).lag(\lag.kr(0.01)),\rq.kr(0.5))]);
-		sig = sig* -18.dbamp;
-		sig = LeakDC.ar(sig).tanh;
+		sig = Select.ar(\filter.kr(0),[sig,RLPF.ar(sig,sig.abs.linexp(0,1,20,16000).lag(\lag.kr(0.01)),\rq.kr(0.5))]);
+		sig = sig.clip2 * -15.dbamp;
+		sig = LeakDC.ar(sig);
 		sig = Splay.ar(sig,1,\amp.kr(-18.dbamp));
 		Out.ar(\out.kr(0),sig)
 	}).add;
 
-	/* === OSC defs === */
+	/* === OSCdefs === */
 
 	OSCdef(\index,{ |msg|
 		var val = msg[1];
@@ -75,14 +72,14 @@ server.waitForBoot({
 
 	OSCdef(\lag,{ |msg|
 		var val = msg[1];
-		val = val.linlin(0,1,1,0.01);
+		val = val.linlin(0,1,0.5,0.01);
 		lagBus.set( val )
 
 	},'/filterKnobs/0');
 
 	OSCdef(\rq,{ |msg|
 		var val = msg[1];
-		val = val.linlin(0,1,1,0.05);
+		val = val.linlin(0,1,1,0.08);
 		rqBus.set( val )
 
 	},'/filterKnobs/1');
@@ -115,12 +112,11 @@ server.waitForBoot({
 
 	},'/knobs/3');
 
-
 	OSCdef(\keyboard,{ |msg|
 		var midiNote = msg[1].midicps;
 		var velocity = msg[2];               // should this be \db.asSpec scaled?
 
-		Synth(\fmPluckSynth,[\carFreq, midiNote,\filter, filter, \velocity,velocity])
+		Synth(\fmSynth,[\carFreq, midiNote,\filter, filter, \velocity,velocity])
 		.map(
 			\modMult,modMultBus,
 			\index,indexBus,
@@ -141,15 +137,8 @@ server.waitForBoot({
 
 	},'/amp');
 
-
 	unixString.unixCmd;
-	"\nfmSynth ready to go!".postln;
+	"\nfmSynth ready to go at:".postln;
 	"ipconfig getifaddr en0".unixCmd
-
 })
 )
-
-
-a = {"ipconfig getifaddr en0".unixCmd.postln}
-
-// sig = Select.ar(\filter.kr(2),[sig, RLPF.ar(sig,\fFreq.kr(440),\rq.kr(0.2) ), RLPF.ar(sig,sig.abs.linexp(0,1,20,20000).lag(0.01),\rq.kr(0.2)) ]);
