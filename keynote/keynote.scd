@@ -1,5 +1,3 @@
-
-
 (
 var server = Server.default;
 var guiNetAddr = NetAddr("localhost",8080);
@@ -119,5 +117,6 @@ server.waitForBoot({
 	},'/loaded');
 
 	unixString.unixCmd;
+	"ipconfig getifaddr en0".unixCmd
 });
 )

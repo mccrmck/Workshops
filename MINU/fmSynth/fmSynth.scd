@@ -1,4 +1,4 @@
-/* === MINU 2023: fmSynth === */
+f/* === MINU 2023: fmSynth === */
 (
 
 var server = Server.default;
@@ -8,6 +8,9 @@ var filter = 0;
 var unixString = "open /Applications/open-stage-control.app --args " ++      // must check for equivalent DOS commands, correct path on Windows machines
 "--send 127.0.0.1:% ".format( NetAddr.localAddr.port ) ++
 "--load '%'".format( "fmSynthGUI.json".resolveRelative );
+
+// if open stage control is not responding, change port number:
+NetAddr.localAddr.postln;
 
 server.waitForBoot({
 

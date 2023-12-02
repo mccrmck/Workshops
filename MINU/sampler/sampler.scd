@@ -10,8 +10,6 @@ var unixString = "open /Applications/open-stage-control.app --args " ++      // 
 "--send 127.0.0.1:% ".format( NetAddr.localAddr.port ) ++
 "--load '%'".format( "samplerGUI.json".resolveRelative );
 
-server.options.device = "EP-HDMI-RX";
-
 server.waitForBoot({
 	var cond = CondVar();
 
