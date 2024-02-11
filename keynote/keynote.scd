@@ -62,8 +62,8 @@ server.waitForBoot({
 		sig = MSMatrix.ar(sig);
 		sig[1] = sig[1] * -3.dbamp;
 		sig = MSMatrix.ar(sig);
-		sig = sig * Env.asr(\atk.kr(0.01),1,\rls.kr(1),\curve.kr(10)).ar(2,\gate.kr(1));
 		sig = Squish.ar(sig,sig,-12,0.01,0.1,3,0.04,3);
+		sig = sig * Env.asr(\atk.kr(0.01),1,\rls.kr(1),\curve.kr(10)).ar(2,\gate.kr(1));
 		Out.ar(\out.kr(), sig  * \amp.kr(0));
 	}).add;
 
